@@ -6,13 +6,7 @@ function getJuiceData(selectedDay) {
         }).map(function(x) {
             return x.drinkName
         });
-        var days = json.filter(function(x) {
-            return x.isFruit == false
-        }).map(function(x) {
-            var date = String(new Date(x.date));
-            return date.slice(0, 4);
-        });
-        days = _.unique(days);
+        var days = ["Fri ", "Thu ", "Mon ", "Tue ", "Wed "];
         $('body').html(JSON.stringify(day))
         drinks = drinks.filter(function(x) {
             return x.toUpperCase() != 'CTL' && x != "Register User";
@@ -34,7 +28,6 @@ function getJuiceData(selectedDay) {
                     quantity: juice
                 });
             }
-            // console.log(data)
             juicePerDay[days[day]] = data;
         }
         displayAllJuiceData(juicePerDay[selectedDay], drinks.length)
@@ -44,6 +37,7 @@ function getJuiceData(selectedDay) {
 
 function displayAllJuiceData(data, total) {
     $('.chart').empty()
+     $(".chart").html("<h3>"+$(".selectDay>#listOfDays>option:selected").text()+"</h3>")
     var width = 500;
     var height = 450;
     var margin = {
@@ -135,6 +129,7 @@ function displayAllJuiceData(data, total) {
 $(window).load(function() {
     $('button.displayGraph').click(function(e) {
         var day = $(".selectDay>#listOfDays>option:selected").val();
+       
         getJuiceData(day)
     })
 })
