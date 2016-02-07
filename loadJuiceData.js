@@ -1,34 +1,12 @@
 function getJuiceData() {
-
-    d3.json('/juice_orders.json', function(err, json) {
-        var drinks = json.filter(function(x) {
-            return x.isFruit == false
-        }).map(function(x) {
-            return x.drinkName
-        });
-        drinks = drinks.filter(function(x) {
-            return x.toUpperCase() != 'CTL' && x != "Register User";
-        })
-        drinks = _.unique(drinks).reverse();
-        var data = [];
-        for (var index in drinks) {
-            var juice = 0;
-            for (var j in json) {
-                if (json[j].drinkName == drinks[index])
-                    juice++;
-            }
-            data.push({
-                drink: drinks[index],
-                quantity: juice
-            });
-        }
-
-        displayAllJuiceData(data, drinks.length)
+    d3.json('/quantityPerDrink.json', function(err, json) {
+        var total = json.reduce(function(x,y){x.quantity = x.quantity+y.quantity;return x},{quantity:0})
+        displayAllJuiceData(json, json.length,total.quantity)
     })
 }
 
 
-function displayAllJuiceData(data, total) {
+function displayAllJuiceData(data, total,totalDrink) {
     $('.chart').empty()
     var width = 500;
     var height = 450;
@@ -64,7 +42,9 @@ function displayAllJuiceData(data, total) {
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
-            return "<strong>Drink:</strong> <span style='color:red'>"+d.drink +"</span>"+"</br><strong>Quantity:</strong> <span style='color:red'>"+d.quantity +"</span>";
+            return "<strong>Drink:</strong> <span style='color:red'>"+d.drink +"</span>"+
+            "</br><strong>Quantity:</strong> <span style='color:red'>"+d.quantity +"</span>"+
+            "</br><strong>Percentage:</strong> <span style='color:red'>"+String((d.quantity/totalDrink)*100).slice(0,4) +"%</span>";
         })
 
     var svg = d3.select(".chart").append("svg")

@@ -1,41 +1,12 @@
 function getJuiceData(selectedDay) {
-
-    d3.json('/juice_orders.json', function(err, json) {
-        var drinks = json.filter(function(x) {
-            return x.isFruit == false
-        }).map(function(x) {
-            return x.drinkName
-        });
-        var days = ["Fri ", "Thu ", "Mon ", "Tue ", "Wed "];
-        $('body').html(JSON.stringify(day))
-        drinks = drinks.filter(function(x) {
-            return x.toUpperCase() != 'CTL' && x != "Register User";
-        })
-        drinks = _.unique(drinks);
-        var juicePerDay = {};
-            console.log("helllo", days)
-        for (var day in days) {
-            var data = [];
-            for (var index in drinks) {
-                var juice = 0;
-                for (var j in json) {
-                    var date = String(new Date(json[j].date));
-                    if (json[j].drinkName == drinks[index] && date.slice(0, 4) == days[day])
-                        juice++;
-                }
-                data.push({
-                    drink: drinks[index],
-                    quantity: juice
-                });
-            }
-            juicePerDay[days[day]] = data;
-        }
-        displayAllJuiceData(juicePerDay[selectedDay], drinks.length)
+     d3.json('/consumptionPerDrinkPerDay.json', function(err, json) {
+        var total = json[selectedDay].reduce(function(x,y){x.quantity = x.quantity+y.quantity;return x},{quantity:0})
+        displayAllJuiceData(json[selectedDay],total.quantity)
     })
 }
 
 
-function displayAllJuiceData(data, total) {
+function displayAllJuiceData(data,totalDrink) {
     $('.chart').empty()
      $(".chart").html("<h3>"+$(".selectDay>#listOfDays>option:selected").text()+"</h3>")
     var width = 500;
@@ -72,7 +43,9 @@ function displayAllJuiceData(data, total) {
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
-            return "<strong>Drink:</strong> <span style='color:red'>"+d.drink +"</span>"+"</br><strong>Quantity:</strong> <span style='color:red'>"+d.quantity +"</span>";
+            return "<strong>Drink:</strong> <span style='color:red'>"+d.drink +"</span>"+
+            "</br><strong>Quantity:</strong> <span style='color:red'>"+d.quantity +"</span>"+
+            "</br><strong>Percentage:</strong> <span style='color:red'>"+String((d.quantity/totalDrink)*100).slice(0,4) +"%</span>";;
         })
 
     var svg = d3.select(".chart").append("svg")
@@ -129,7 +102,6 @@ function displayAllJuiceData(data, total) {
 $(window).load(function() {
     $('button.displayGraph').click(function(e) {
         var day = $(".selectDay>#listOfDays>option:selected").val();
-       
         getJuiceData(day)
     })
 })
