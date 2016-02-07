@@ -1,30 +1,43 @@
-function getJuiceData() {
+function getJuiceData(selectedDay) {
 
     d3.json('/juice_orders.json', function(err, json) {
-        console.log(json.length)
         var drinks = json.filter(function(x) {
             return x.isFruit == false
         }).map(function(x) {
             return x.drinkName
         });
+        var days = json.filter(function(x) {
+            return x.isFruit == false
+        }).map(function(x) {
+            var date = String(new Date(x.date));
+            return date.slice(0, 4);
+        });
+        days = _.unique(days);
+        $('body').html(JSON.stringify(day))
         drinks = drinks.filter(function(x) {
             return x.toUpperCase() != 'CTL' && x != "Register User";
         })
         drinks = _.unique(drinks);
-        var data = [];
-        for (var index in drinks) {
-            var people = [];
-            for (var j in json) {
-                if (json[j].drinkName == drinks[index])
-                    people.push(json[j].employeeId);
+        var juicePerDay = {};
+            console.log("helllo", days)
+        for (var day in days) {
+            var data = [];
+            for (var index in drinks) {
+                var juice = 0;
+                for (var j in json) {
+                    var date = String(new Date(json[j].date));
+                    if (json[j].drinkName == drinks[index] && date.slice(0, 4) == days[day])
+                        juice++;
+                }
+                data.push({
+                    drink: drinks[index],
+                    quantity: juice
+                });
             }
-            data.push({
-                drink: drinks[index],
-                quantity: _.unique(people)
-            });
+            // console.log(data)
+            juicePerDay[days[day]] = data;
         }
-
-        displayAllJuiceData(data, drinks.length)
+        displayAllJuiceData(juicePerDay[selectedDay], drinks.length)
     })
 }
 
@@ -118,6 +131,10 @@ function displayAllJuiceData(data, total) {
 }
 
 
+
 $(window).load(function() {
-    getJuiceData()
+    $('button.displayGraph').click(function(e) {
+        var day = $(".selectDay>#listOfDays>option:selected").val();
+        getJuiceData(day)
+    })
 })
