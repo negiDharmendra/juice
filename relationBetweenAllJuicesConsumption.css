@@ -1,0 +1,9 @@
+.Monchart,.Tuechart,.Wedchart,.Thuchart,.Frichart{
+  display: inline-block;
+  float: left;
+  margin: auto;
+  /*background-color: gray*/
+}
+.Thuchart,.Frichart{
+  margin-left:10%;
+}

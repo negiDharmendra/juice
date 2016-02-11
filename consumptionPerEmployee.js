@@ -1,20 +1,16 @@
-function getJuiceData(selectedDay) {
-    var days = ['Mon','Tue','Wed','Thu','Fri'];
-    var days1 = ['Monday','Tuesday','Wednesday','Thursday','Friday']
-     d3.json('/consumptionPerDrinkPerDay.json', function(err, json) {
-        days.forEach(function(day,index){
-             var total = json[day].reduce(function(x,y){x.quantity = x.quantity+y.quantity;return x},{quantity:0})
-            displayAllJuiceData(json[day],total.quantity,day,days1[index]);
-        })
+function getJuiceData(employee) {
+     d3.json('/consumptionPerEmployee.json', function(err, json) {
+        var total = json[employee].reduce(function(x,y){x.quantity = x.quantity+y.quantity;return x},{quantity:0})
+        displayAllJuiceData(json[employee],total.quantity)
     })
 }
 
 
-function displayAllJuiceData(data,totalDrink,divname,day) {
-    $('.'+divname+'chart').empty()
-     $('.'+divname+'chart').html("<h3>"+day+' Drinks: '+totalDrink+"</h3>")
-    var width = 280;
-    var height = 220;
+function displayAllJuiceData(data,totalDrink) {
+    $('.chart').empty()
+     $(".chart").html("<h3>"+$(".selectEmployee>#listOfEmployeeId>option:selected").text()+"</h3>")
+    var width = 500;
+    var height = 450;
     var margin = {
             top: 20,
             right: 20,
@@ -24,28 +20,24 @@ function displayAllJuiceData(data,totalDrink,divname,day) {
         width = width - margin.left - margin.right,
         height = height - margin.top - margin.bottom;
 
-    var x = d3.scale.ordinal().rangeRoundBands([0, 400], .1)
+    var x = d3.scale.ordinal().rangeRoundBands([0, 850], .1)
     x.domain(data.map(function(d) {
         return d.drink;
-    }));
-    var x1 = d3.scale.ordinal().rangeRoundBands([0, 400], .1)
-    x1.domain(data.map(function(d,i) {
-        return i+1;
     }));
     var y = d3.scale.linear()
         .range([0, height]);
 
     var xAxis = d3.svg.axis()
-        .scale(x1).ticks(9).tickSize(1);
+        .scale(x).ticks(9).tickSize(1);
 
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        .ticks(12).tickSize(1);
+        .ticks(10).tickSize(1);
 
     y.domain([d3.max(data.map(function(d) {
         return d.quantity
-    }))+100, -10]);
+    })), 0]);
 
     var tip = d3.tip()
         .attr('class', 'd3-tip')
@@ -56,31 +48,30 @@ function displayAllJuiceData(data,totalDrink,divname,day) {
             "</br><strong>Percentage:</strong> <span style='color:red'>"+String((d.quantity/totalDrink)*100).slice(0,4) +"%</span>";;
         })
 
-    var svg = d3.select('.'+divname+'chart').append("svg")
-        .attr("width", width + margin.left + margin.right + 170)
-        .attr("height", height + margin.top + margin.bottom + 40)
+    var svg = d3.select(".chart").append("svg")
+        .attr("width", width + margin.left + margin.right + 800)
+        .attr("height", height + margin.top + margin.bottom + 100)
         .append("g")
-        .attr("transform", "translate(" + 30 + "," + 20 + ")");
+        .attr("transform", "translate(" + 50 + "," + 20 + ")");
 
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis)
         .selectAll("text")
-        .attr("y", 10)
-        .attr("x", 1)
-        .attr("dy", ".1em")
-        .style("font-size", "8px")
-        .style("text-anchor", "middle")
+        .attr("y", -15)
+        .attr("x", 10)
+        .attr("dy", ".35em")
+        .attr("transform", "rotate(90)")
+        .style("text-anchor", "start")
 
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
         .append("text")
-        .attr("y", -15)
-        .attr("x", 15)
-        .style("font-size", "8px")
-        .attr("dy", ".1em")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 2)
+        .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Quantity");
 
@@ -90,9 +81,9 @@ function displayAllJuiceData(data,totalDrink,divname,day) {
         .enter().append("rect")
         .attr("class", "bar")
         .attr("x", function(d) {
-            return x(d.drink) + 5;
+            return x(d.drink) + 20;
         })
-        .attr("width", 5)
+        .attr("width", 10)
         .attr("y", function(d) {
             return y(d.quantity);
         })
@@ -106,11 +97,19 @@ function displayAllJuiceData(data,totalDrink,divname,day) {
 
 }
 
-
+$(window).load(function(){
+    d3.json('/consumptionPerEmployee.json', function(err, json) {
+        var employeesId = Object.keys(json);
+        for(var employeeId in employeesId){
+            $('#listOfEmployeeId').append( '<option value='+employeesId[employeeId] +'>'+employeesId[employeeId]+'</option>')
+        }
+    })
+})
 
 $(window).load(function() {
-    // $('button.displayGraph').click(function(e) {
-        // var day = $(".selectDay>#listOfDays>option:selected").val();
-        getJuiceData()
-    // })
+
+    $('button.displayGraph').click(function(e) {
+        var employee = $(".selectEmployee>#listOfEmployeeId>option:selected").val();
+        getJuiceData(employee)
+    })
 })
